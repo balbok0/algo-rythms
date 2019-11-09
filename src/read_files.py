@@ -6,6 +6,7 @@ from tqdm import tqdm
 import os
 from typing import Union
 
+# All the genes being considered for the training task
 genres_idx_dict = {
     'lofi': '27',
     'jazz': '4',
@@ -18,6 +19,7 @@ genres_idx_dict = {
     'instrumental': '1235',
     'electronic': '15'
 }
+
 
 def fma_meta_to_csv(metadata_folder: Union[str, Path] = None, out_folder: Union[str, Path] = None):
     if metadata_folder is None:
@@ -54,14 +56,13 @@ def fma_meta_to_csv(metadata_folder: Union[str, Path] = None, out_folder: Union[
         genres_filepath_dict[key]['validation'] = []
         genres_filepath_dict[key]['test'] = []
 
-
     for track_id, track_features in tqdm(tracks.iterrows(), total=len(tracks)):
         track_path = fma_utils.get_audio_path('', track_id)
         split = track_features['set', 'split']
 
         for genre_name, genre_idx in genres_idx_dict.items():
             if genre_idx in track_features['track', 'genres']:
-                genres_filepath_dict[genre_name][split].append(track_features)
+                genres_filepath_dict[genre_name][split].append(track_path)
 
     for genre_name, genre_dict in genres_filepath_dict.items():
         np.save(
