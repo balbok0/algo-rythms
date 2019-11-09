@@ -5,6 +5,7 @@ import numpy as np
 from tqdm import tqdm
 import os
 from typing import Union
+import glob
 
 # All the genes being considered for the training task
 genres_idx_dict = {
@@ -65,18 +66,38 @@ def fma_meta_to_csv(metadata_folder: Union[str, Path] = None, out_folder: Union[
                 genres_filepath_dict[genre_name][split].append(track_path)
 
     for genre_name, genre_dict in genres_filepath_dict.items():
+        genre_dir = out_folder / genre_name
+        if not os.path.exists(genre_dir):
+            os.makedirs(genre_dir)
         np.save(
-            out_folder / '{}_train.npy'.format(genre_name),
+            genre_dir / 'train.npy',
             np.array(genre_dict['training'])
         )
         np.save(
-            out_folder / '{}_val.npy'.format(genre_name),
+            genre_dir / 'val.npy',
             np.array(genre_dict['validation'])
         )
         np.save(
-            out_folder / '{}_test.npy'.format(genre_name),
+            genre_dir / 'test.npy',
             np.array(genre_dict['test'])
         )
 
+
+def get_paths(genre: str) -> (np.ndarray, np.ndarray, np.ndarray):
+    path_to_genre = Path('data/processed_data') / genre
+    return np.load(path_to_genre / 'train.npy'), \
+        np.load(path_to_genre / 'val.npy'), \
+        np.load(path_to_genre / 'test.npy')
+
+
+def total_number_of_tracks():
+    result = 0
+    paths = glob.glob("data/processed_data/**/*.npy")
+
+    for p in paths:
+        result += len(np.load(p))
+    return result
+
 if __name__ == "__main__":
-    fma_meta_to_csv()
+    # fma_meta_to_csv()
+    print(total_number_of_tracks())
