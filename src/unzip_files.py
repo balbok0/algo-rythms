@@ -28,8 +28,3 @@ def unzip_files(file_name, track_progress=False):
             print("unzipping {}".format(file_name))
             for file in tqdm(files_to_unzip):
                 zipped.extract("fma_full/{}".format(file), "../data/unzipped/")
-
-
-if __name__ == "__main__":
-    fl = "../data/processed_data/alt_hip_hop/test.npy"
-    unzip_files(fl)
