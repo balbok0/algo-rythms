@@ -1,10 +1,11 @@
 import librosa as lbs
 import matplotlib as plt
 import numpy as np
+import soundfile as sf
 
 
 def spectrogrammify():
-    y, sr = lbs.load("../data/unzipped/fma_full/000/000900.mp3")
+    y, sr = lbs.load("000900.mp3")
     plt.figure(figsize=(12, 8))
     D = lbs.amplitude_to_db(np.abs(lbs.stft(y)), ref=np.max)
     plt.subplot(4, 2, 1)
