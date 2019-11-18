@@ -86,11 +86,12 @@ def fma_meta_to_csv(metadata_folder: Union[str, Path] = None, out_folder: Union[
         )
 
 
-def get_paths(genre: str) -> (np.ndarray, np.ndarray, np.ndarray):
+def get_paths(genre: str, numpy: bool = False) -> (np.ndarray, np.ndarray, np.ndarray):
     path_to_genre = Path('data/processed_data') / genre
-    return np.load(path_to_genre / 'train_mp3.npy'), \
-        np.load(path_to_genre / 'val_mp3.npy'), \
-        np.load(path_to_genre / 'test_mp3.npy')
+    tag = 'npy' if numpy else 'mp3'
+    return np.load(path_to_genre / 'train_{}.npy'.format(tag)), \
+        np.load(path_to_genre / 'val_{}.npy'.format(tag)), \
+        np.load(path_to_genre / 'test_{}.npy'.format(tag))
 
 
 def total_number_of_tracks():
@@ -103,7 +104,27 @@ def total_number_of_tracks():
     return result
 
 
-def mp3_to_npy(genre: str, path_read: Path, path_save_arr: Path, path_save_paths: Path):
+def mp3_to_npy(genre: str, path_read: Path = None, path_save_arr: Path = None, path_save_paths: Path = None):
+    """ Given a genre takes all of it's songs,
+    extract them to the correct folder and
+    converts to npy arrays representing spectrograms.
+
+    Arguments:
+        genre {str} -- Songs from what genre to convert.
+        path_read {Path} -- Path to zip file containing songs.  (default: 'data/fma_metadata')
+        path_save_arr {Path} -- Path to where to save npy arrays.  (default: 'data/npy_data')
+        path_save_paths {Path} --
+            Path to where to save arrays containing paths to the spectrogram .npy files.
+            (default: 'data/processed_data')
+    """
+    # Convert default Nones to actual defaults
+    if path_read is None:
+        path_read = Path('data/fma_metadata')
+    if path_save_arr is None:
+        path_save_arr = Path('data/npy_data')
+    if path_save_paths is None:
+        path_save_paths = Path('data/processed_data')
+
     if not os.path.exists(path_save_arr):
         os.makedirs(path_save_arr)
 
