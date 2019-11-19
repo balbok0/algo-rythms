@@ -1,14 +1,23 @@
 import fma_utils
-from pathlib import Path
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 import librosa as lbs
+from audioread.exceptions import NoBackendError
+
 from tqdm import tqdm
+
+import glob
 import os
+from pathlib import Path
+from shutil import move
 from zipfile import ZipFile
 
 from typing import Union
-import glob
+
+# Disable warnings, because librosa is annoying
+import warnings
+warnings.filterwarnings("ignore")
 
 # All the genes being considered for the training task
 genres_idx_dict = {
@@ -72,17 +81,18 @@ def fma_meta_to_csv(metadata_folder: Union[str, Path] = None, out_folder: Union[
         genre_dir = out_folder / genre_name
         if not os.path.exists(genre_dir):
             os.makedirs(genre_dir)
+        print('genre_name: {}'.format(genre_name))
         np.save(
             genre_dir / 'train_mp3.npy',
-            np.array(genre_dict['training'])
+            np.unique(genre_dict['training'])
         )
         np.save(
             genre_dir / 'val_mp3.npy',
-            np.array(genre_dict['validation'])
+            np.unique(genre_dict['validation'])
         )
         np.save(
             genre_dir / 'test_mp3.npy',
-            np.array(genre_dict['test'])
+            np.unique(genre_dict['test'])
         )
 
 
@@ -125,8 +135,11 @@ def mp3_to_npy(genre: str, path_read: Path = None, path_save_arr: Path = None, p
     if path_save_paths is None:
         path_save_paths = Path('data/processed_data')
 
-    if not os.path.exists(path_save_arr):
-        os.makedirs(path_save_arr)
+    # Make dictionaries to save data to
+    if not os.path.exists(path_save_paths):
+        os.makedirs(path_save_paths)
+    if not os.path.exists(path_save_paths):
+        os.makedirs(path_save_paths)
 
     # Decompress required files
     train, val, test = get_paths(genre)
@@ -134,8 +147,8 @@ def mp3_to_npy(genre: str, path_read: Path = None, path_save_arr: Path = None, p
     # Make arrays of paths to the newly created npy files
     train_paths, val_paths, test_paths = [], [], []
 
-    with ZipFile(path_read) as zipped:
-        print("unzipping {}".format(file_name))
+    with ZipFile(path_read, mode='r') as zipped:
+        print("unzipping {}".format(path_read))
 
         # Do the conversion for all datasets.
         for name, dataset in [('Train', train), ('Validation', val), ('Test', test)]:
@@ -143,6 +156,27 @@ def mp3_to_npy(genre: str, path_read: Path = None, path_save_arr: Path = None, p
             for file in tqdm(dataset, desc="{}:".format(name)):
                 file_npy = file[:-4] + '.npy'  # Numpy file to be created
                 file_folder = Path(file).parent  # Folder to which extract .mp3 file
+
+                if not os.path.exists(path_save_arr / file_npy):  # Only process file once
+                    # Extract .mp3 file and then move it to the right directory.
+                    extract_path = zipped.extract("fma_large/{}".format(file))
+                    if not os.path.exists(extract_path):  # Unsuccessful extract? Continue
+                        continue
+
+                    try:
+                        # Read newly .mp3 created file
+                        y, sr = lbs.load(extract_path)
+                        # Convert it to spectrogram numpy array
+                        D = lbs.amplitude_to_db(np.abs(lbs.stft(y)), ref=np.max)
+                    except (RuntimeError, NoBackendError):
+                        continue
+                    # Save spectrogram to correct folder (optionally creating it)
+                    if not os.path.exists(path_save_arr / file_folder):
+                        os.makedirs(path_save_arr / file_folder)
+                    np.save(path_save_arr / file_npy, D)
+
+                    # Remove .mp3 file
+                    os.remove(extract_path)
 
                 # Append paths to npy files
                 if name == 'Train':
@@ -152,18 +186,6 @@ def mp3_to_npy(genre: str, path_read: Path = None, path_save_arr: Path = None, p
                 elif name == 'Test':
                     test_paths.append(path_save_arr / file_npy)
 
-                if not os.path.exists(path_save_arr / file_npy):  # Only process file once
-                    # Extract .mp3 file to the folder.
-                    zipped.extract("fma_large/{}".format(file), path_save_arr / file_folder)
-
-                    # Read newly .mp3 created file
-                    y, sr = lbs.load(path_save_arr / file)
-                    # Convert it to spectrogram numpy array and save
-                    D = lbs.amplitude_to_db(np.abs(lbs.stft(y)), ref=np.max)
-                    np.save(path_save_arr / file_npy, D)
-
-                    # Remove .mp3 file
-                    os.remove(path_save_arr / file)
 
     # Save paths to new data
     np.save(path_save_paths / genre / 'train_npy.npy', train_paths)
@@ -171,6 +193,15 @@ def mp3_to_npy(genre: str, path_read: Path = None, path_save_arr: Path = None, p
     np.save(path_save_paths / genre / 'test_npy.npy', test_paths)
 
 if __name__ == "__main__":
-    fma_meta_to_csv()
+    # First step get paths for
+    # fma_meta_to_csv()
     # print(total_number_of_tracks())
-    print(get_paths('lofi')[0][:5])
+    # print(get_paths('lofi')[0][:5])
+    # for g in genres_idx_dict.keys():
+    #     print('Genre {}\tSize: {}'.format(g, sum([len(x) for x in get_paths(g)])))
+    mp3_to_npy(
+        'instrumental',  # Which genre
+        Path('data/fma_large.zip'),  # Path to zip file
+        Path('data/npy_data'),  # Where to save spectrograms
+        Path('data/processed_data')  # Where to save paths to spectrograms
+    )
