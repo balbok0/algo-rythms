@@ -34,6 +34,7 @@ class SpectrogramImageDataset(Dataset):
                 sample,
                 [(0, 0), (0, self.y_size - sample.shape[1])]
             )
+
         # Add grayscale channel
         sample = sample[np.newaxis, ...]
 

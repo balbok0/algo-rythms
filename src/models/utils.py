@@ -35,7 +35,7 @@ def train(model, device, optimizer, criterion, train_loader, lr, epoch, log_inte
                 loss.item()))
     return np.mean(losses)
 
-def test(model, device, test_loader):
+def test(model, device, criterion, test_loader):
     test_loss = 0
     correct = 0
 
@@ -44,7 +44,7 @@ def test(model, device, test_loader):
         for batch_idx, (data, label) in enumerate(test_loader):
             data, label = data.to(device), label.to(device)
             output, hidden = model(data, hidden)
-            test_loss += model.loss(output, label, reduction='mean').item()
+            test_loss += criterion(output, label, reduction='mean').item()
 
     test_loss /= len(test_loader)
 
