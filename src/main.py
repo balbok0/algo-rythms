@@ -12,6 +12,8 @@ from logger import Logger
 
 import traceback
 
+DEBUG = False
+
 GENRE = 'instrumental'
 SEQUENCE_LENGTH = 100
 BATCH_SIZE = 256
@@ -30,7 +32,10 @@ def main(logger: Logger):
 
     print('Creating datasets')
     train_data, val_data, _ = get_paths(GENRE, numpy=True)
-    train_data = SpectrogramSequenceDataset(train_data, SEQUENCE_LENGTH, BATCH_SIZE, transform=ToTensor())
+    if DEBUG:
+        train_data = train_data[:100]
+        val_data = val_data[:100]
+    train_data = SpectrogramSequenceDataset(train_data, SEQUENCE_LENGTH, BATCH_SIZE)
     val_data = SpectrogramSequenceDataset(val_data, SEQUENCE_LENGTH, BATCH_SIZE, transform=ToTensor())
 
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE)
@@ -38,7 +43,7 @@ def main(logger: Logger):
     print('Finished creating datasets')
 
     print('Creating model')
-    model = SimpleLSTM(SEQUENCE_LENGTH, FEATURE_SIZE)
+    model = SimpleLSTM(SEQUENCE_LENGTH, FEATURE_SIZE).to(device)
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     criterion = nn.MSELoss()
     print('Finished creating model')

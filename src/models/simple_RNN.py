@@ -11,7 +11,8 @@ class SimpleLSTM(nn.Module):
 
         self.data_size = data_size
         self.feature_size = feature_size
-        self.lstm1 = nn.LSTM(self.data_size, self.feature_size, batch_first=True)
+        self.encoder = nn.Linear(self.data_size, self.feature_size)
+        self.lstm1 = nn.LSTM(self.feature_size, self.feature_size, batch_first=True)
         self.lstm2 = nn.LSTM(self.feature_size, self.feature_size, batch_first=True)
         self.decoder = nn.Linear(self.feature_size, self.data_size)
 
@@ -23,6 +24,8 @@ class SimpleLSTM(nn.Module):
         batch_size = x.shape[0]
         sequence_length = x.shape[1]
 
+        x = self.encoder(x)
+
         x = x.view(sequence_length, batch_size, -1)
         if hidden_state is None:
           x, hidden_state = self.lstm1(x)
@@ -31,5 +34,6 @@ class SimpleLSTM(nn.Module):
         x, hidden_state = self.lstm2(x, hidden_state)
 
         x = self.decoder(x)
+        x = x.view(batch_size, sequence_length, -1)
 
         return x, hidden_state

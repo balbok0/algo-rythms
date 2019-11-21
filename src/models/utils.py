@@ -32,7 +32,8 @@ def train(model, device, optimizer, criterion, train_loader, lr, epoch, log_inte
                 batch_idx * len(data),
                 len(train_loader.dataset),
                 100. * batch_idx / len(train_loader),
-                loss.item()))
+                loss.item()
+            ))
     return np.mean(losses)
 
 def test(model, device, criterion, test_loader):
