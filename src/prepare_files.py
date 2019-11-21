@@ -1,4 +1,4 @@
-import fma_utils
+import external.fma_utils as fma_utils
 
 import numpy as np
 import pandas as pd

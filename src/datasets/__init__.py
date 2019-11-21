@@ -1,1 +1,2 @@
-from .utils import SpectrogramImageDataset
+from .spectrogram_image import SpectrogramImageDataset
+from .spectrogram_sequence import SpectrogramSequenceDataset
