@@ -99,9 +99,9 @@ def fma_meta_to_csv(metadata_folder: Union[str, Path] = None, out_folder: Union[
 def get_paths(genre: str, numpy: bool = False) -> (np.ndarray, np.ndarray, np.ndarray):
     path_to_genre = Path('data/processed_data') / genre
     tag = 'npy' if numpy else 'mp3'
-    return np.load(path_to_genre / 'train_{}.npy'.format(tag)), \
-        np.load(path_to_genre / 'val_{}.npy'.format(tag)), \
-        np.load(path_to_genre / 'test_{}.npy'.format(tag))
+    return np.load(path_to_genre / 'train_{}.npy'.format(tag), allow_pickle=True), \
+        np.load(path_to_genre / 'val_{}.npy'.format(tag), allow_pickle=True), \
+        np.load(path_to_genre / 'test_{}.npy'.format(tag), allow_pickle=True)
 
 
 def total_number_of_tracks():
@@ -192,16 +192,29 @@ def mp3_to_npy(genre: str, path_read: Path = None, path_save_arr: Path = None, p
     np.save(path_save_paths / genre / 'val_npy.npy', val_paths)
     np.save(path_save_paths / genre / 'test_npy.npy', test_paths)
 
+
+def check_data():
+    """Temporary function just used to check various stuff we created.
+    """
+    for g in genres_idx_dict.keys():
+        print('Genre {}\tSize: {}'.format(g, sum([len(x) for x in get_paths(g)])))
+    g = 'instrumental'
+    print('Genre {}\tSize: {}'.format(g, sum([len(x) for x in get_paths(g, numpy=True)])))
+
+    for p in glob.glob('data/npy_data/**/*.npy'):
+        print(np.load(p).shape)
+
+
 if __name__ == "__main__":
-    # First step get paths for
+    pass
+
+    # First step get paths from tracks and genres and make numpy arrays
     # fma_meta_to_csv()
-    # print(total_number_of_tracks())
-    # print(get_paths('lofi')[0][:5])
-    # for g in genres_idx_dict.keys():
-    #     print('Genre {}\tSize: {}'.format(g, sum([len(x) for x in get_paths(g)])))
-    mp3_to_npy(
-        'instrumental',  # Which genre
-        Path('data/fma_large.zip'),  # Path to zip file
-        Path('data/npy_data'),  # Where to save spectrograms
-        Path('data/processed_data')  # Where to save paths to spectrograms
-    )
+
+    # Convert stuff to npy files
+    # mp3_to_npy(
+    #     'ambient_electro',  # Which genre
+    #     Path('data/fma_large.zip'),  # Path to zip file
+    #     Path('data/npy_data'),  # Where to save spectrograms
+    #     Path('data/processed_data')  # Where to save paths to spectrograms
+    # )
