@@ -193,6 +193,33 @@ def mp3_to_npy(genre: str, path_read: Path = None, path_save_arr: Path = None, p
     np.save(path_save_paths / genre / 'test_npy.npy', test_paths)
 
 
+def npy_to_mp3(spectrogram: np.ndarray, mp3_path: Path = None):
+    spectrogram = lbs.db_to_amplitude(spectrogram, ref=50.)
+    y = lbs.griffinlim(spectrogram)
+    lbs.output.write_wav(mp3_path, y, 22050)  # 22050 is a default sample rate for librosa
+    return y
+
+
+def check_loop_mp3_to_npy_to_mp3():
+    # Check conversion back and forth
+    y, sr = lbs.load('data/testing_data/testfile.mp3')
+    D = lbs.amplitude_to_db(np.abs(lbs.stft(y)), ref=np.max)
+    y_regen = npy_to_mp3(
+        D,
+        'data/testing_data/testfile_regen.wav'
+    )
+    y_regen, new_sr = lbs.load('data/testing_data/testfile_regen.mp3')
+    D_regen = lbs.amplitude_to_db(np.abs(lbs.stft(y_regen)), ref=np.max)
+
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(2, 1)
+    im = ax[0].imshow(D)
+    fig.colorbar(im, ax=ax[0])
+    im = ax[1].imshow(D_regen)
+    fig.colorbar(im, ax=ax[1])
+    plt.show()
+
+
 def check_data():
     """Temporary function just used to check various stuff we created.
     """
@@ -218,3 +245,5 @@ if __name__ == "__main__":
     #     Path('data/npy_data'),  # Where to save spectrograms
     #     Path('data/processed_data')  # Where to save paths to spectrograms
     # )
+
+    check_loop_mp3_to_npy_to_mp3()
