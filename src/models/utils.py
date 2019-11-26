@@ -45,7 +45,7 @@ def test(model, device, criterion, test_loader):
         for batch_idx, (data, label) in enumerate(test_loader):
             data, label = data.to(device), label.to(device)
             output, hidden = model(data, hidden)
-            test_loss += criterion(output, label, reduction='mean').item()
+            test_loss += criterion(output, label).item()
 
     test_loss /= len(test_loader)
 

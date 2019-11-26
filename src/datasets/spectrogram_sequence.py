@@ -30,12 +30,17 @@ class SpectrogramSequenceDataset(Dataset):
         self.file_idxs = np.reshape(file_idxs, (batch_size, -1, 2))
 
     def __len__(self):
-        return np.prod(self.file_idxs.shape)
+        return self.file_idxs.shape[0] * self.file_idxs.shape[1]
 
     def __getitem__(self, idx):
         i = idx // self.file_idxs.shape[1]
         j = idx % self.file_idxs.shape[1]
-        path, start_idx = self.file_idxs[i, j]
+        try:
+            path, start_idx = self.file_idxs[i, j]
+        except IndexError:
+            print('idx : {}'.format(idx))
+            print('i, j: {}, {}'.format(i, j))
+            print('file shape: {}'.format(self.file_idxs.shape))
         spectrogram = np.load(path)
 
         data = spectrogram[:, start_idx:start_idx + self.sequence_length]
