@@ -4,6 +4,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
+import os
 from torchvision.transforms import ToTensor
 
 from models import train, test, SimpleLSTM
@@ -23,6 +24,8 @@ LEARNING_RATE = 0.002
 WEIGHT_DECAY = 0.0005
 USE_CUDA = True
 PRINT_INTERVAL = 10
+PATH = 'data/saved_models/'
+MODEL_NAME = 'latest_model.pth'
 
 device = 'cuda' if USE_CUDA and torch.cuda.is_available() else 'cpu'
 
@@ -55,12 +58,19 @@ def main(logger: Logger):
         train_losses.append((epoch, train_loss))
         test_losses.append((epoch, test_loss))
 
-    logger.save_end(
-        {
-            'train_loss': train_losses,
-            'test_loss': test_losses
-        }
-    )
+    # logger.save_end(
+    #     {
+    #         'train_loss': train_losses,
+    #         'test_loss': test_losses
+    #     }
+    # )
+
+    # Save the model parameters to be used again. Change MODEL_NAME to reflect model name and version
+    if not os.path.isdir(PATH):
+        os.makedirs(PATH)
+    torch.save(model.state_dict(), PATH + MODEL_NAME)
+
+
 
 if __name__ == "__main__":
     logger = Logger()
