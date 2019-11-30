@@ -35,8 +35,8 @@ def main(logger: Logger):
     print('Creating datasets')
     train_data, val_data, _ = get_paths(GENRE, numpy=True)
     if DEBUG:
-        train_data = train_data[:100]
-        val_data = val_data[:100]
+        train_data = train_data[:200]
+        val_data = val_data[:200]
     train_data = SpectrogramSequenceDataset(train_data, SEQUENCE_LENGTH, BATCH_SIZE)
     val_data = SpectrogramSequenceDataset(val_data, SEQUENCE_LENGTH, BATCH_SIZE)
 
@@ -58,12 +58,12 @@ def main(logger: Logger):
         train_losses.append((epoch, train_loss))
         test_losses.append((epoch, test_loss))
 
-    # logger.save_end(
-    #     {
-    #         'train_loss': train_losses,
-    #         'test_loss': test_losses
-    #     }
-    # )
+    logger.save_end(
+        {
+            'train_loss': train_losses,
+            'test_loss': test_losses
+        }
+    )
 
     # Save the model parameters to be used again. Change MODEL_NAME to reflect model name and version
     if not os.path.isdir(PATH):
