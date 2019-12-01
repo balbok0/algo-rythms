@@ -55,7 +55,7 @@ class SpectrogramSequenceDataset(Dataset):
             target = self.transform(target)
         else:
             data = torch.from_numpy(data)
-            data = torch.from_numpy(target)
+            target = torch.from_numpy(target)
 
 
         return data, target
