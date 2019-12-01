@@ -1,2 +1,3 @@
-from .utils import train, test
+from .utils import train, test, train_adversary, train_generator
 from .simple_RNN import SimpleLSTM
+from .simple_CNN_GAN import *

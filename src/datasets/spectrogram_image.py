@@ -28,7 +28,7 @@ class SpectrogramImageDataset(Dataset):
 
         # Decrease size, or pad with zeros (i.e. silence)
         if sample.shape[1] > self.y_size:
-            sample = sample[:self.y_size]
+            sample = sample[..., :self.y_size]
         else:
             sample = np.pad(
                 sample,
@@ -36,7 +36,7 @@ class SpectrogramImageDataset(Dataset):
             )
 
         # Add grayscale channel
-        sample = sample[np.newaxis, ...]
+        # sample = sample[np.newaxis, ...]
 
         if self.transform:
             sample = self.transform(sample)

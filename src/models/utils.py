@@ -4,6 +4,8 @@ import numpy as np
 
 from tqdm import tqdm
 
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 def repackage_hidden(h):
     """Wraps hidden states in new Tensors, to detach them from their history."""
     if isinstance(h, torch.Tensor):
@@ -35,6 +37,70 @@ def train(model, device, optimizer, criterion, train_loader, lr, epoch, log_inte
                 loss.item()
             ))
     return np.mean(losses)
+
+
+def train_adversary(adversial, generator, optimizer_adversial, criterion, train_loader):
+    loss = 0.
+    for x in train_loader:
+        batch_size = len(x)
+
+        x = x.to(device)
+        z = torch.tensor(np.random.normal(0, 1, (batch_size, 200)), dtype=torch.float32).to(device)
+
+        adversial.zero_grad()
+        y_real_pred = adversial(x)
+
+        # create and smooth the labels
+        ones = np.ones(y_real_pred.shape) + np.random.uniform(-0.1, 0.1)
+        zeros = np.zeros(y_real_pred.shape) + np.random.uniform(0, 0.2)
+
+        # swap some labels
+        idx = np.random.uniform(0, 1, y_real_pred.shape)
+        idx = np.argwhere(idx < 0.03)
+        ones[idx] = 0
+        zeros[idx] = 1
+
+        # Convert to torch
+        ones = torch.from_numpy(ones).float().to(device)
+        zeros = torch.from_numpy(zeros).float().to(device)
+
+        # Make generated samples
+        generated = generator(z)
+        y_fake_pred = adversial(generated)
+
+        # Calculate overall loss
+        loss_real = criterion(y_real_pred, ones)
+        loss_fake = criterion(y_fake_pred, zeros)
+        loss_total = loss_fake + loss_real
+
+        # Backprop
+        loss_total.backward()
+        optimizer_adversial.step()
+
+        loss += loss_total
+    return loss
+
+
+def train_generator(generator, adversial, optimizer_generator, criterion, train_loader):
+    loss = 0.
+    for x in tqdm(train_loader, desc="Training Generator"):
+        batch_size = len(x)
+
+        z = torch.tensor(np.random.normal(0, 1, (batch_size, 200)), dtype=torch.float32).to(device)
+
+        generator.zero_grad()
+        generated = generator(z)
+        y_fake = adversial(generated)
+
+        ones = torch.ones(batch_size, dtype=torch.long).to(device)
+
+        loss_total = criterion(y_fake, ones)
+        loss_total.backward()
+        optimizer_generator.step()
+
+        loss += loss_total
+    return loss, generated
+
 
 def test(model, device, criterion, test_loader):
     test_loss = 0
