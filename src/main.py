@@ -65,7 +65,7 @@ def main(logger: Logger):
 
     # Logger will also save the model in the same folder as the losses
     logger.save_end(
-        model, 
+        model,
         {
             'train_loss': train_losses,
             'test_loss': test_losses
@@ -117,8 +117,15 @@ def main_gan(logger: Logger):
     # Save the model parameters to be used again. Change MODEL_NAME to reflect model name and version
     if not os.path.isdir(PATH):
         os.makedirs(PATH)
-    torch.save(model_generator.state_dict(), PATH + MODEL_NAME_GENERATOR)
-    torch.save(model_adversial.state_dict(), PATH + MODEL_NAME_ADVERSIAL)
+
+    # Logger will also save the model in the same folder as the losses
+    logger.save_end_gan(
+        model_generator, model_adversial,
+        {
+            'generator_loss': generator_losses,
+            'adversial_loss': adversial_losses
+        }
+    )
 
 
 if __name__ == "__main__":

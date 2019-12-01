@@ -20,9 +20,8 @@ class SimpleLSTM(nn.Module):
         batch_size = x.shape[0]
         sequence_length = x.shape[1]
 
-        print('x: {}'.format(x.shape))
         x = x.view(sequence_length, batch_size, -1)
-        print('x: {}'.format(x.shape))
+
         if hidden_state is None:
             x, hidden_state = self.lstm1(x)
         else:

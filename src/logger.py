@@ -17,8 +17,14 @@ class Logger():
         if not os.path.exists(self.log_folder):
             os.makedirs(self.log_folder)
 
-    def save_end(self, model, kwargs):
+    def save_end(self, model, **kwargs):
         torch.save(model.state_dict(), self.log_folder / 'model.pth')
+        for k, v in kwargs.items():
+            np.save(self.log_folder / k, v)
+
+    def save_gan_end(self, model_generator, model_adversary, **kwargs):
+        torch.save(model_generator.state_dict(), self.log_folder / 'model_generator.pth')
+        torch.save(model_adversary.state_dict(), self.log_folder / 'model_adversary.pth')
         for k, v in kwargs.items():
             np.save(self.log_folder / k, v)
 

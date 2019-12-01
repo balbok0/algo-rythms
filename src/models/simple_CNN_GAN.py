@@ -136,7 +136,6 @@ class SimpleDecoder(nn.Module):
         self.fc_last = nn.Linear(512, 2)
 
     def forward(self, x):
-        print('before shape: {}'.format(x.shape))
         x = self.bn0(x)
 
         x = self.block1(x)
