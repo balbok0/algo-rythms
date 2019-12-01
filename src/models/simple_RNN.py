@@ -12,6 +12,7 @@ class SimpleLSTM(nn.Module):
 
         self.data_size = data_size
         self.lstm1 = nn.LSTM(self.data_size, self.data_size, batch_first=True)
+        self.drop1 = nn.Dropout(0.2)
         self.lstm2 = nn.LSTM((int)(self.data_size / 2), self.data_size, batch_first=True)
         self.best_accuracy = -1
 
@@ -26,6 +27,8 @@ class SimpleLSTM(nn.Module):
             x, hidden_state = self.lstm1(x)
         else:
             x, hidden_state = self.lstm1(x, hidden_state)
+
+        x = self.drop1(x)
 
         # Take care of odd shapes. If the dimension is odd then the just drop the last value and then add
         # adjacent elements

@@ -63,18 +63,14 @@ def main(logger: Logger):
         train_losses.append((epoch, train_loss))
         test_losses.append((epoch, test_loss))
 
-    # logger.save_end(
-    #     {
-    #         'train_loss': train_losses,
-    #         'test_loss': test_losses
-    #     }
-    # )
-
-    # Save the model parameters to be used again. Change MODEL_NAME to reflect model name and version
-    if not os.path.isdir(PATH):
-        os.makedirs(PATH)
-    torch.save(model.state_dict(), PATH + MODEL_NAME)
-
+    # Logger will also save the model in the same folder as the losses
+    logger.save_end(
+        model, 
+        {
+            'train_loss': train_losses,
+            'test_loss': test_losses
+        }
+    )
 
 def main_gan(logger: Logger):
     generator_losses, adversial_losses = [], []
