@@ -237,7 +237,7 @@ def check_data():
 # Creates the required starting data to start making predictions. Datapoints is the number of
 # songs that need to be in the start data. seq_len is the length of starting sample of each song required.
 # The outputted start data will have shape (datapoints, 1025, seq_len)
-def create_start_data(genre = 'classical', datapoints, seq_len):
+def create_start_data(datapoints, seq_len, genre='classical'):
     print("Creating start data")
     paths, _ = get_paths(genre, numpy=True)
     paths = paths[:datapoints]

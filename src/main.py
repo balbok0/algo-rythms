@@ -14,6 +14,8 @@ from prepare_files import create_start_data, predictions_to_audio
 
 import traceback
 
+from pathlib import Path
+
 DEBUG = True
 
 GENRE = 'instrumental'
@@ -138,9 +140,9 @@ def main_predictor(model_name = 'RNN2', model_path: Path = None, make_start_data
     if make_start_data:
         create_start_data(DATAPOINTS_START_DATA, SEQUENCE_LENGTH)
     start_data = np.load(DEFAULT_START_DATA)
-    
+
     print('Predictor Started')
-        model = None
+    model = None
     if model_name is 'RNN2':
         model = SimpleLSTM(SEQUENCE_LENGTH).to(device)
         model.load_state_dict(torch.load(model_path))
@@ -159,8 +161,8 @@ if __name__ == "__main__":
     logger = Logger() 
     try:
         # main(logger)
-        main_predictor()
-        # main_gan(logger)
+        # main_predictor()
+        main_gan(logger)
     except Exception as e:
         logger.clean()
         print(traceback.format_exc())
