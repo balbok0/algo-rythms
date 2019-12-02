@@ -50,19 +50,9 @@ def train_adversary(adversial, generator, optimizer_adversial, criterion, train_
         adversial.zero_grad()
         y_real_pred = adversial(x)
 
-        # create and smooth the labels
-        ones = np.ones(y_real_pred.shape) + np.random.uniform(-0.1, 0.1)
-        zeros = np.zeros(y_real_pred.shape) + np.random.uniform(0, 0.2)
-
-        # swap some labels
-        idx = np.random.uniform(0, 1, y_real_pred.shape)
-        idx = np.argwhere(idx < 0.03)
-        ones[idx] = 0
-        zeros[idx] = 1
-
-        # Convert to torch
-        ones = torch.from_numpy(ones).float().to(device)
-        zeros = torch.from_numpy(zeros).float().to(device)
+        # Create labels
+        ones = torch.ones(batch_size).long().to(device)
+        zeros = torch.zeros(batch_size).long().to(device)
 
         # Make generated samples
         generated = generator(z)

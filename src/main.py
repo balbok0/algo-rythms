@@ -88,7 +88,8 @@ def main_gan(logger: Logger):
     print('Finished creating datasets')
 
     print('Creating model')
-    model_generator = SimpleGenerator(200).to(device)
+    # model_generator = SimpleGenerator(200).to(device)
+    model_generator = LittleMoreComplicatedGenerator(200).to(device)
     model_adversial = SimpleDecoder().to(device)
 
     optimizer_generator = optim.Adam(model_generator.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
