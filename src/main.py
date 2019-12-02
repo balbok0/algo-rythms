@@ -20,7 +20,7 @@ DEBUG = True
 
 GENRE = 'instrumental'
 PREDICT_SEQUENCE_LENGTH = 5
-SEQUENCE_LENGTH = 100
+SEQUENCE_LENGTH = 50
 IMAGE_LENGTH = 1024
 BATCH_IMAGE_SIZE = 8
 BATCH_SEQUENCE_SIZE = 256
@@ -47,8 +47,8 @@ def main(logger: Logger):
     print('Creating datasets')
     train_data, val_data, _ = get_paths(GENRE, numpy=True)
     if DEBUG:
-        train_data = train_data[:100]
-        val_data = val_data[:100]
+        train_data = train_data[:50]
+        val_data = val_data[:50]
     train_data = SpectrogramSequenceDataset(train_data, SEQUENCE_LENGTH, BATCH_SEQUENCE_SIZE)
     val_data = SpectrogramSequenceDataset(val_data, SEQUENCE_LENGTH, BATCH_SEQUENCE_SIZE)
 
@@ -135,8 +135,9 @@ def main_gan(logger: Logger):
         }
     )
 
+
 # Will make predictions for the given Model
-def main_predictor(model_name = 'RNN2', model_path: Path = None, make_start_data: bool = False):
+def main_predictor(model_name: str = 'RNN2', model_path: Path = None, make_start_data: bool = False):
     if make_start_data:
         create_start_data(DATAPOINTS_START_DATA, SEQUENCE_LENGTH)
     start_data = np.load(DEFAULT_START_DATA)
@@ -148,21 +149,20 @@ def main_predictor(model_name = 'RNN2', model_path: Path = None, make_start_data
         model.load_state_dict(torch.load(model_path))
     print('Model is locked and loaded !!!!!!!!!!!!!!!!!!!!!!')
     predictions = utils.predict(model, device, start_data, SEQUENCE_LENGTH, PREDICT_SEQUENCE_LENGTH)
-    if not os.exists(DEFAULT_PREDICT_PATH):
+    if not os.path.exists(DEFAULT_PREDICT_PATH):
         os.makedirs(DEFAULT_PREDICT_PATH)
     np.save(DEFAULT_PREDICT_PATH / 'predicted.npy', predictions)
     print('Predictions Done.')
-
     print('Converting Predictions to Audio.........')
-    predictions_to_audio(DEFAULT_PREDICT_PATH / 'predicted.npy')
+    predictions_to_audio(DEFAULT_PREDICT_PATH)
     print('Done converting predictions to audio')
 
 if __name__ == "__main__":
     logger = Logger() 
     try:
         # main(logger)
-        # main_predictor()
-        main_gan(logger)
+        main_predictor('RNN2', Path('log/Model_CPU/model.pth'))
+        # main_gan(logger)
     except Exception as e:
         logger.clean()
         print(traceback.format_exc())
