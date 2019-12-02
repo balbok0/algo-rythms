@@ -112,3 +112,4 @@ data/npy_data/
 
 # Zip files
 *.zip
+*__tmp*
