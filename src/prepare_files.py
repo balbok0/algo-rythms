@@ -33,6 +33,8 @@ genres_idx_dict = {
     'electronic': '15'
 }
 
+FREQUENCIES = 1025
+
 
 def fma_meta_to_csv(metadata_folder: Union[str, Path] = None, out_folder: Union[str, Path] = None):
     if metadata_folder is None:
@@ -230,6 +232,43 @@ def check_data():
 
     for p in glob.glob('data/npy_data/**/*.npy'):
         print(np.load(p).shape)
+
+
+# Creates the required starting data to start making predictions. Datapoints is the number of
+# songs that need to be in the start data. seq_len is the length of starting sample of each song required.
+# The outputted start data will have shape (datapoints, 1025, seq_len)
+def create_start_data(genre = 'classical', datapoints, seq_len):
+    print("Creating start data")
+    paths, _ = get_paths(genre, numpy=True)
+    paths = paths[:datapoints]
+
+    start_data = np.zeros((0,FREQUENCIES,seq_len))
+    # Load every path and append the start of every track to the start data
+    for path in tqdm(paths):
+        spec = np.load(path)[:, :seq_len]
+        spec = np.expand_dims(spec, axis=0)
+        start_data = np.append(start_data, numpee, axis=0)
+
+    path_start_data = Path('data/start_data_predtict/')
+
+    if not os.exists(path_start_data):
+        os.makedirs(path_start_data)
+
+    np.save(path_start_data / 'start_data.npy', start_data)
+    print("Successfuly created start data")
+
+
+# This will make a new folder with the current date and time and just predict in. It will
+# assume that there is a file called predicted.npy in the given folder and that the given folder is legal
+def predictions_to_audio(predictions_path: Path = 'data/data_predicted/'):
+    predictions = np.load(predictions_path / 'predicted.npy')
+    time_stamp = str(datetime.now())
+    time_stamp = time_stamp.replace(':', '')
+    log_folder = Path(predictions_path) / self.time_stamp
+    os.makedirs(log_folder)
+    for pred in enumerate(tqdm(predictions)):
+        file_name = str(pred) + '.wav'
+        npy_to_mp3(predictions[pred], log_folder / file_name)
 
 
 if __name__ == "__main__":

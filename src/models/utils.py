@@ -23,7 +23,9 @@ def train(model, device, optimizer, criterion, train_loader, lr, epoch, log_inte
         if hidden is not None:
             hidden = repackage_hidden(hidden)
         optimizer.zero_grad()
+        print(data.shape)
         output, hidden = model(data)
+        print(output.shape)
         loss = criterion(output, label)
         losses.append(loss.item())
         loss.backward()
@@ -107,3 +109,26 @@ def test(model, device, criterion, test_loader):
 
     print('\nTest set: Average loss: {:.4f}\n'.format(test_loss))
     return test_loss
+
+
+# Given a model and some data to start with and the number of sequences to be generated, this will
+# return a numpy arrray that has given number of sequences after the first one.
+# Shape of the start data should be (:, 1025, seq_len)
+def predict(model, device, start_data, seq_len, times):
+    start_data = torch.from_numpy(start_data).float().to(device)
+    final_data = np.zeros((0, start_data.shape[1], seq_len * (times + 1)))
+    for data in tqdm(start_data):
+        data = data.unsqueeze(0)
+        print(data.shape)
+        output, hidden = model(data, None)
+        build = data.cpu().detach().numpy() 
+        build = np.append(build, output.cpu().detach().numpy(), axis=2)
+        for i in tqdm(range(times - 1)):
+            output, hidden = model(output, hidden)
+            print("Output shape is: {} and Build shape is: {}".format(output.shape, build.shape))
+            build = np.append(build, output.cpu().detach().numpy(), axis=2)
+        print("Build shape is {} and final_data shape is {}".format(build.shape, final_data.shape))
+        final_data = np.append(final_data, build, axis=0)
+    print("GO LISTEN TO MY JUICY BEATZ NOW")
+    return final_data
+

@@ -10,12 +10,14 @@ from torchvision.transforms import ToTensor
 from models import *
 from datasets import SpectrogramImageDataset, SpectrogramSequenceDataset, get_paths
 from logger import Logger
+from prepare_files import create_start_data, predictions_to_audio
 
 import traceback
 
 DEBUG = True
 
 GENRE = 'instrumental'
+PREDICT_SEQUENCE_LENGTH = 5
 SEQUENCE_LENGTH = 100
 IMAGE_LENGTH = 1024
 BATCH_IMAGE_SIZE = 8
@@ -23,14 +25,17 @@ BATCH_SEQUENCE_SIZE = 256
 TEST_BATCH_IMAGE_SIZE = 8
 TEST_BATCH_SEQUENCE_SIZE = 256
 EPOCHS = 20
-LEARNING_RATE = 0.002
+LEARNING_RATE = 0.0008
 WEIGHT_DECAY = 0.0005
 USE_CUDA = True
 PRINT_INTERVAL = 10
-PATH = 'data/saved_models/'
+PATH = Path('data/saved_models/')
 MODEL_NAME = 'latest_model.pth'
 MODEL_NAME_GENERATOR = 'latest_model_generator.pth'
 MODEL_NAME_ADVERSIAL = 'latest_model_adversial.pth'
+DEFAULT_START_DATA = Path('data/start_data/start_data.npy')
+DEFAULT_PREDICT_PATH = Path('data/data_predict/')
+DATAPOINTS_START_DATA = 100
 
 device = 'cuda' if USE_CUDA and torch.cuda.is_available() else 'cpu'
 
@@ -128,12 +133,34 @@ def main_gan(logger: Logger):
         }
     )
 
+# Will make predictions for the given Model
+def main_predictor(model_name = 'RNN2', model_path: Path = None, make_start_data: bool = False):
+    if make_start_data:
+        create_start_data(DATAPOINTS_START_DATA, SEQUENCE_LENGTH)
+    start_data = np.load(DEFAULT_START_DATA)
+    
+    print('Predictor Started')
+        model = None
+    if model_name is 'RNN2':
+        model = SimpleLSTM(SEQUENCE_LENGTH).to(device)
+        model.load_state_dict(torch.load(model_path))
+    print('Model is locked and loaded !!!!!!!!!!!!!!!!!!!!!!')
+    predictions = utils.predict(model, device, start_data, SEQUENCE_LENGTH, PREDICT_SEQUENCE_LENGTH)
+    if not os.exists(DEFAULT_PREDICT_PATH):
+        os.makedirs(DEFAULT_PREDICT_PATH)
+    np.save(DEFAULT_PREDICT_PATH / 'predicted.npy', predictions)
+    print('Predictions Done.')
+
+    print('Converting Predictions to Audio.........')
+    predictions_to_audio(DEFAULT_PREDICT_PATH / 'predicted.npy')
+    print('Done converting predictions to audio')
 
 if __name__ == "__main__":
-    logger = Logger()
+    logger = Logger() 
     try:
         # main(logger)
-        main_gan(logger)
+        main_predictor()
+        # main_gan(logger)
     except Exception as e:
         logger.clean()
         print(traceback.format_exc())

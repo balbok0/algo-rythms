@@ -42,7 +42,7 @@ class SpectrogramSequenceDataset(Dataset):
             print('i, j: {}, {}'.format(i, j))
             print('file shape: {}'.format(self.file_idxs.shape))
         spectrogram = np.load(path)
-
+        # Chops out a chunk of given sequence length from the spectrogram
         data = spectrogram[:, start_idx:start_idx + self.sequence_length]
         target = spectrogram[:, start_idx + 1:start_idx + self.sequence_length + 1]
         # Data can be pulled exactly from the end of the file.
@@ -56,6 +56,5 @@ class SpectrogramSequenceDataset(Dataset):
         else:
             data = torch.from_numpy(data)
             target = torch.from_numpy(target)
-
 
         return data, target
