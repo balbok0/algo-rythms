@@ -119,15 +119,16 @@ def predict(model, device, start_data, seq_len, times):
     final_data = np.zeros((0, start_data.shape[1], seq_len * (times + 1)))
     for data in tqdm(start_data):
         data = data.unsqueeze(0)
+        print(data.shape)
         output, hidden = model(data, None)
-        build = data.cpu().detach().numpy() 
-        build = np.append(build, output.cpu().detach().numpy(), axis=2)
-        for i in range(times - 1):
+        build = data.cpu().detach().numpy()[0]
+        build = np.append(build, np.expand_dims(output.cpu().detach().numpy()[0, :, seq_len - 1], axis=1), axis=1)
+        for i in tqdm(range(times * seq_len - 1)):
             output, hidden = model(output, hidden)
             # print("Output shape is: {} and Build shape is: {}".format(output.shape, build.shape))
-            build = np.append(build, output.cpu().detach().numpy(), axis=2)
+            build = np.append(build, np.expand_dims(output.cpu().detach().numpy()[0, :, seq_len - 1], axis=1), axis=1)
         # print("Build shape is {} and final_data shape is {}".format(build.shape, final_data.shape))
-        final_data = np.append(final_data, build, axis=0)
+        final_data = np.append(final_data, np.expand_dims(build, axis=0), axis=0)
     print("GO LISTEN TO MY JUICY BEATZ NOW")
     return final_data
 
