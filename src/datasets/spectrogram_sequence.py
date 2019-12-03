@@ -48,7 +48,7 @@ class SpectrogramSequenceDataset(Dataset):
         # Data can be pulled exactly from the end of the file.
         # In that case we need to pad zeros (silence) to the end of target
         if target.shape[1] < self.sequence_length:
-            target = np.pad(target, [(0, 0), (0, self.sequence_length - target.shape[1])])
+            target = np.pad(target, [(0, 0), (0, self.sequence_length - target.shape[1])], 'constant', constant_value=0)
 
         if self.transform:
             data = self.transform(data)

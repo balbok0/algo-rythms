@@ -35,6 +35,9 @@ class SimpleLSTM2(nn.Module):
 
         hs_1, hs_2, hs_3, hs_4, hs_5 = hidden_state[0], hidden_state[1], hidden_state[2], hidden_state[3], hidden_state[4]
 
+        sig = nn.Sigmoid()
+        x = sig(x /10) * 5
+
         # print('x: {}'.format(x.shape))
         x = x.view(sequence_length, batch_size, -1)
         # print('x: {}'.format(x.shape))
@@ -44,12 +47,14 @@ class SimpleLSTM2(nn.Module):
         else:
             x, hs_1 = self.lstm1(x, hs_1)
 
+
         # Second LSTM
         x = self.crop(x)
         if hs_2 is None:
             x, hs_2 = self.lstm2(x)
         else:
             x, hs_2 = self.lstm2(x, hs_2)
+
 
         # Third LSTM
         x = self.crop(self.crop(x))
@@ -65,6 +70,7 @@ class SimpleLSTM2(nn.Module):
             x, hs_4 = self.lstm4(x)
         else:
             x, hs_4 = self.lstm4(x, hs_4)
+
 
         # Fifth LSTM
         x = x = self.crop(self.crop(self.crop(self.crop(x))))

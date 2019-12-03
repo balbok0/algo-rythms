@@ -33,6 +33,9 @@ class SimpleLSTM(nn.Module):
 
         hs_1, hs_2 = hidden_state[0], hidden_state[1]
 
+        sig = nn.Sigmoid()
+        x = sig(x /10) * 5
+
         print('x: {}'.format(x.shape))
         x = x.view(sequence_length, batch_size, -1)
         print('x: {}'.format(x.shape))
