@@ -28,17 +28,25 @@ class SimpleLSTM(nn.Module):
     def forward(self, x, hidden_state=None):
         batch_size = x.shape[0]
         sequence_length = x.shape[1]
+        if hidden_state is None:
+            hidden_state = (None, None)
+
+        hs_1, hs_2 = hidden_state[0], hidden_state[1]
 
         print('x: {}'.format(x.shape))
         x = x.view(sequence_length, batch_size, -1)
         print('x: {}'.format(x.shape))
-        if hidden_state is None:
-            x, hidden_state = self.lstm1(x)
+        if hs_1 is None:
+            x, hs_1 = self.lstm1(x)
         else:
-            x, hidden_state = self.lstm1(x, hidden_state)
+            x, hs_1 = self.lstm1(x, hs_1)
 
         x = self.crop(x)
-        x, hidden_state = self.lstm2(x, hidden_state)
+
+        if hs_2 is None:
+            x, hs_2 = self.lstm2(x)
+        else:
+            x, hs_2 = self.lstm2(x, hs_2)
 # ############################
 #         x = self.crop(x)
 #         x, hidden_state = self.lstm3(x, hidden_state)
@@ -46,4 +54,4 @@ class SimpleLSTM(nn.Module):
 
         x = x.contiguous().view(batch_size, sequence_length, -1)
 
-        return x, hidden_state
+        return x, (hs_1, hs_2)

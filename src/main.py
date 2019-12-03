@@ -10,20 +10,20 @@ from torchvision.transforms import ToTensor
 from models import *
 from datasets import SpectrogramImageDataset, SpectrogramSequenceDataset, get_paths
 from logger import Logger
-from prepare_files import create_start_data, predictions_to_audio
+# from prepare_files import create_start_data, predictions_to_audio
 
 import traceback
 
 from pathlib import Path
 
-DEBUG = True
+DEBUG = False
 
 GENRE = 'instrumental'
 PREDICT_SEQUENCE_LENGTH = 5
-SEQUENCE_LENGTH = 50
+SEQUENCE_LENGTH = 256
 IMAGE_LENGTH = 1024
 BATCH_IMAGE_SIZE = 8
-BATCH_SEQUENCE_SIZE = 256
+BATCH_SEQUENCE_SIZE = 64
 TEST_BATCH_IMAGE_SIZE = 8
 TEST_BATCH_SEQUENCE_SIZE = 256
 EPOCHS = 20
@@ -47,8 +47,8 @@ def main(logger: Logger):
     print('Creating datasets')
     train_data, val_data, _ = get_paths(GENRE, numpy=True)
     if DEBUG:
-        train_data = train_data[:50]
-        val_data = val_data[:50]
+        train_data = train_data[:600]
+        val_data = val_data[:600]
     train_data = SpectrogramSequenceDataset(train_data, SEQUENCE_LENGTH, BATCH_SEQUENCE_SIZE)
     val_data = SpectrogramSequenceDataset(val_data, SEQUENCE_LENGTH, BATCH_SEQUENCE_SIZE)
 
@@ -57,7 +57,7 @@ def main(logger: Logger):
     print('Finished creating datasets')
 
     print('Creating model')
-    model = SimpleLSTM(SEQUENCE_LENGTH).to(device)
+    model = SimpleLSTM2(SEQUENCE_LENGTH).to(device)
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     criterion = nn.MSELoss()
     print('Finished creating model')
@@ -70,14 +70,14 @@ def main(logger: Logger):
         train_losses.append((epoch, train_loss))
         test_losses.append((epoch, test_loss))
 
-    # Logger will also save the model in the same folder as the losses
-    logger.save_end(
-        model,
-        {
-            'train_loss': train_losses,
-            'test_loss': test_losses
-        }
-    )
+        # Logger will also save the model in the same folder as the losses
+        logger.save_end(
+            model,
+            {
+                'train_loss': train_losses,
+                'test_loss': test_losses
+            }
+        )
 
 def main_gan(logger: Logger):
     generator_losses, adversial_losses = [], []
@@ -160,8 +160,8 @@ def main_predictor(model_name: str = 'RNN2', model_path: Path = None, make_start
 if __name__ == "__main__":
     logger = Logger() 
     try:
-        # main(logger)
-        main_predictor('RNN2', Path('log/Model_CPU/model.pth'))
+        main(logger)
+        # main_predictor('RNN2', Path('log/Model_CPU/model.pth'))
         # main_gan(logger)
     except Exception as e:
         logger.clean()
