@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import librosa as lbs
 from audioread.exceptions import NoBackendError
+from datetime import datetime
 
 from tqdm import tqdm
 
@@ -237,21 +238,22 @@ def check_data():
 # Creates the required starting data to start making predictions. Datapoints is the number of
 # songs that need to be in the start data. seq_len is the length of starting sample of each song required.
 # The outputted start data will have shape (datapoints, 1025, seq_len)
-def create_start_data(datapoints, seq_len, genre='classical'):
+def create_start_data(datapoints, seq_len, genre='instrumental'):
     print("Creating start data")
-    paths, _ = get_paths(genre, numpy=True)
+    paths, _, _ = get_paths(genre, numpy=False)
     paths = paths[:datapoints]
 
-    start_data = np.zeros((0,FREQUENCIES,seq_len))
+    start_data = np.zeros((0, FREQUENCIES, seq_len))
     # Load every path and append the start of every track to the start data
     for path in tqdm(paths):
-        spec = np.load(path)[:, :seq_len]
+        path = path.replace('.mp3', '.npy')
+        spec = np.load(Path('data/npy_data/') / path)[:, :seq_len]
         spec = np.expand_dims(spec, axis=0)
-        start_data = np.append(start_data, numpee, axis=0)
+        start_data = np.append(start_data, spec, axis=0)
 
-    path_start_data = Path('data/start_data_predtict/')
+    path_start_data = Path('data/start_data/')
 
-    if not os.exists(path_start_data):
+    if not os.path.exists(path_start_data):
         os.makedirs(path_start_data)
 
     np.save(path_start_data / 'start_data.npy', start_data)
@@ -264,9 +266,10 @@ def predictions_to_audio(predictions_path: Path = 'data/data_predicted/'):
     predictions = np.load(predictions_path / 'predicted.npy')
     time_stamp = str(datetime.now())
     time_stamp = time_stamp.replace(':', '')
-    log_folder = Path(predictions_path) / self.time_stamp
+    log_folder = Path(predictions_path) / time_stamp
     os.makedirs(log_folder)
-    for pred in enumerate(tqdm(predictions)):
+    print(predictions.shape)
+    for pred in range(predictions.shape[0]):
         file_name = str(pred) + '.wav'
         npy_to_mp3(predictions[pred], log_folder / file_name)
 
