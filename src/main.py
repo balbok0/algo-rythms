@@ -11,6 +11,7 @@ from models import *
 from datasets import SpectrogramImageDataset, SpectrogramSequenceDataset, get_paths
 from logger import Logger
 from prepare_files import create_start_data, predictions_to_audio
+from spectrogrammify import prepare_output_graphs
 
 import traceback
 
@@ -163,6 +164,7 @@ if __name__ == "__main__":
         main(logger)
         # main_predictor('RNN2', Path('log/Model_3874/model.pth'), make_start_data=True)
         # main_gan(logger)
+        # prepare_output_graphs(Path('data/data_predict/prep/'))
     except Exception as e:
         logger.clean()
         print(traceback.format_exc())

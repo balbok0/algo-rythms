@@ -2,29 +2,28 @@ import librosa as lbs
 import librosa.display as lbs_dsp
 import matplotlib.pyplot as plt
 import numpy as np
-import time
+from pathlib import Path
 import glob
+import tqdm
 
-def spectrogrammify():
-    y, sr = lbs.load("output.wav")
-    duration = lbs.core.get_duration(y, sr)
-    y = y[:int(len(y) * 30 / duration)]
 
-    plt.figure(figsize=(12, 8))
-    D = lbs.amplitude_to_db(np.abs(lbs.stft(y)), ref=np.max)
+# Given a folder with the predicted outputs, it generates and saves the spectrogram
+# for each file. Files should be named by number. Total outputs will default to 100.
+def prepare_output_graphs(predicted_outputs: Path, total_outputs: int = 100):
+    for i in tqdm.trange(total_outputs):
+        file_audio = Path('{}.wav'.format(i))
+        file_spec = Path('{}.png'.format(i))
+        y, sr = lbs.load(predicted_outputs / file_audio)
+        duration = lbs.core.get_duration(y, sr)
+        y = y[:int(len(y) * 30 / duration)]
 
-    np.save('data/testing_data/testfile.npy', D)
-    np.savez_compressed('data/testing_data/testfile.npz', **{"0": D})
+        plt.figure(figsize=(12, 8))
+        D = lbs.amplitude_to_db(np.abs(lbs.stft(y)), ref=np.max)
 
-    start = time.time()
-    compressed = np.load('data/testing_data/testfile.npz')
-    print('Time in ms: {}'.format(time.time() - start))
-
-    plt.subplot(4, 2, 1)
-    lbs_dsp.specshow(D, y_axis='linear')
-    plt.colorbar(format='%+2.0f dB')
-    plt.title('Linear-frequency power spectrogram')
-    plt.show()
+        lbs_dsp.specshow(D, y_axis='linear')
+        plt.colorbar(format='%+2.0f dB')
+        plt.title('Linear-frequency power spectrogram')
+        plt.savefig(predicted_outputs / file_spec)
 
 
 def show_spectro():
