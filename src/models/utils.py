@@ -120,7 +120,7 @@ def predict(model, device, start_data, seq_len, times):
     for data in tqdm(start_data):
         data = data.unsqueeze(0)
         print(data.shape)
-        output, hidden = model(data, None)
+        output, hidden = model(data)
         build = data.cpu().detach().numpy()[0]
         build = np.append(build, np.expand_dims(output.cpu().detach().numpy()[0, :, seq_len - 1], axis=1), axis=1)
         for i in tqdm(range(times * seq_len - 1)):
